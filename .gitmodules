@@ -1,3 +1,3 @@
-[submodule "python-mpv"]
+[submodule "lib/python_mpv"]
 	path = lib/python_mpv
 	url = https://github.com/gustaebel/python-mpv.git
