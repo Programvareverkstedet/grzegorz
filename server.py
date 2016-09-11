@@ -2,6 +2,7 @@
 import remi.gui as gui, random, os, time
 from remi import start, App
 from threading import Timer
+from mpv_control import mpv
 
 class namespace(object): pass
 
@@ -71,10 +72,6 @@ class MyApp(App):
 		                                    ['3', 'spis meg', "90:01"],
 		                                    ['3', "Slidervalue: %s" % self.playback.slider.get_value(), "0:00"]])
 		
-		mpv.step()
-		mpv.get_queue()
-		mpv.position()
-		
 		Timer(1, self.mainLoop).start()
 	def playback_play(self): pass
 	def playback_pause(self): pass
@@ -84,6 +81,7 @@ class MyApp(App):
 			value = self.input.field.get_text()
 		
 		print(value)
+		mpv.play(value)
 		self.input.field.set_text("")
 		
 

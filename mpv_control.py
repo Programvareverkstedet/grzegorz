@@ -12,7 +12,7 @@ class MPV(next_MPV):
         super().__init__(debug=True)
 
     def play(self, url):
-        self.command("loadfile", path)
+        self.command("loadfile", url)
         self.set_property("pause", False)
     
     @staticmethod
