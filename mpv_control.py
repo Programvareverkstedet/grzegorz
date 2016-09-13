@@ -8,13 +8,14 @@ class MPV(next_MPV):
         self.default_argv += (
             [ '--keep-open'
             , '--force-window'
+            , '--vo drm'
             ])
         super().__init__(debug=True)
 
     def play(self, url):
         self.command("loadfile", url)
         self.set_property("pause", False)
-    
+
     @staticmethod
     def fetchTitle(url):
         return ydl.extract_info(url, download=False).get('title')
