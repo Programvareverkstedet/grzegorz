@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-import remi.gui as gui, random, os, time
+import remi.gui as gui, random, os, time, shutil, sys
 from remi import start, App
 from threading import Timer
-from mpv_control import mpv
+if sys.version_info[0] == 2:
+	from ConfigParser import ConfigParser
+else:
+	from configparser import ConfigParser
+if "--no-mpv" not in sys.argv:
+	from mpv_control import mpv
 
 class namespace(object): pass
 
@@ -14,6 +19,8 @@ class MyApp(App):
 	def __init__(self, *args):
 		res_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'res')
 		super(MyApp, self).__init__(*args, static_paths=(res_path,))
+		
+		#initalize mpv here?
 		
 	def main(self):
 		container = gui.VBox(width=512)
@@ -79,11 +86,28 @@ class MyApp(App):
 	def input_submit(self, value=None):
 		if not value:
 			value = self.input.field.get_text()
-		
-		print(value)
-		mpv.play(value)
 		self.input.field.set_text("")
+		if mpv.play(value):
+			pass
+		
 		
 
-# starts the webserver
-start(MyApp, address="0.0.0.0", start_browser=False, multiple_instance=True)
+
+def main():
+	if not os.path.exists("config.ini"):
+		shutil.copyfile("default_config.ini", "config.ini")
+	
+	ini = ConfigParser()
+	with open("config.ini", "r") as f:
+		ini.readfp(f)
+	
+	host = ini.get("server", "host")
+	port = ini.getint("server", "port")
+	start_browser = ini.getboolean("server", "start_browser")
+	multiple_instance = ini.getboolean("server", "multiple_instance")
+	
+	# starts the webserver
+	start(MyApp, address=host, port=port, start_browser=start_browser, multiple_instance=multiple_instance)
+
+if __name__ == "__main__":
+		main()
