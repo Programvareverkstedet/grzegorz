@@ -1,7 +1,9 @@
 import asyncio
+from . import playlistmanage
 
 async def entry():
     await asyncio.wait([
+        playlistmanage.metadatafetch_loop(),
     ])
 
 def main():
