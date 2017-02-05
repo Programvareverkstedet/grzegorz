@@ -38,7 +38,7 @@ class Condition:
             self.monitor.notify_all()
 
 class UnixConnection:
-    def __init__(self, path):
+    async def __init__(self, path):
         (self.reader, self.writer) = await asyncio.open_unix_connection(path)
 
     def __aiter__(self):
