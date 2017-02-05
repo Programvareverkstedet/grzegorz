@@ -15,10 +15,28 @@ class namespace(object): pass
 COLOR_BLUE = "rgb(33, 150, 243)"
 COLOR_BLUE_SHADOW = "rgba(33, 150, 243, 0.75)"
 
+
+#todo: move this functionality to mpv_control.py or its own file, managing playlists and shit?
+import youtube_dl
+def get_youtube_metadata(url, ydl = youtube_dl.YoutubeDL()):
+	#todo: check if url is valid
+	
+	#todo, stop it from doung the whole playlist
+	resp = ydl.extract_info(url, download=False)
+	#print resp.keys()
+	
+	title = resp.get('title')
+	length = resp.get('duration')
+	
+	#print( title, "%i:%.2i" % (length//60, length%60))
+	return title, "%i:%.2i" % (length//60, length%60)
+
+
 class MyApp(App):
 	def __init__(self, *args):
 		res_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'res')
 		super(MyApp, self).__init__(*args, static_paths=(res_path,))
+		
 		
 		#initalize mpv here?
 		
@@ -49,6 +67,8 @@ class MyApp(App):
 		self.playlist.table.from_2d_matrix([['#', 'Name', "length"]])
 		container.append(self.playlist.table)
 		
+		self.playlist.queue = []#[i] = [source, name, length]
+		
 		#input
 		container.append(gui.Label("Add songs:"))
 		inputContainer = gui.HBox(width=512)
@@ -64,34 +84,48 @@ class MyApp(App):
 		inputContainer.append(self.input.submit)
 		container.append(inputContainer)
 		
-		
-		
 		#return the container
 		self.mainLoop()
 		return container
 	def mainLoop(self):
 		#self.playback.slider.get_value()
-		self.playback.slider.set_value(int(random.random()*100))
 		
-		self.playlist.table.from_2d_matrix([['#', 'Name', "length"],
-		                                    ['1', 'Awesome song', "5:23"],
-		                                    ['2', 'min kuk er saa hard', "2:56"],
-		                                    ['3', 'spis meg', "90:01"],
-		                                    ['3', "Slidervalue: %s" % self.playback.slider.get_value(), "0:00"]])
+		self.playback_update()
+		
+		self.playlist.table.from_2d_matrix(self.playlist_update())
 		
 		Timer(1, self.mainLoop).start()
 	def playback_play(self): pass
 	def playback_pause(self): pass
-	def playback_next(self): pass
+	def playback_next(self):
+		source, name, length = self.playlist.queue.pop(0)
+		
+		pass
+		
 	def input_submit(self, value=None):
 		if not value:
 			value = self.input.field.get_text()
+		
+		title, length =  get_youtube_metadata(value)
+		
 		self.input.field.set_text("")
-		if mpv.play(value):
-			pass
+	#playback steps:
+	def playback_update(self):
+		#talk to mpv, see wether the song is being played still
+		if 0:#if done:
+			self.playback_next()
+			self.playback.slider.set_value(0)
+		else:
+			self.playback.slider.set_value(100)
 		
+		return
+	def playlist_update(self):
+		out = [['#', 'Name', "length"]]
 		
-
+		for i, (source, name, length) in enumerate(self.playlist.queue):
+			out.append([str(i+1), name, length])
+		
+		return out
 
 def main():
 	if not os.path.exists("config.ini"):
