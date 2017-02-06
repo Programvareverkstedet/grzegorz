@@ -8,6 +8,21 @@ def ify(func):
             None, lambda: func(*args, **kwargs))
     return asyncified
 
+def safely(func, *args, **kwargs):
+    asyncloop = asyncio.get_event_loop()
+    asyncloop.call_soon_threadsafe(lambda: func(*args, **kwargs))
+
+def callback(coro, callback=None):
+    asyncloop = asyncio.get_event_loop()
+    future = asyncio.run_cooroutine_threadsafe(coro, asyncloop)
+    if callback:
+        future.add_done_callback(callback)
+    return future
+
+def run(*coros):
+    asyncloop = asyncio.get_event_loop()
+    return asyncloop.run_until_complete(asyncio.gather(*coros))
+
 class Queue(asyncio.Queue):
     __anext__ = asyncio.Queue.get
 
@@ -37,12 +52,17 @@ class Condition:
         with await self.monitor:
             self.monitor.notify_all()
 
+async def unix_connection(path):
+    endpoints = await asyncio.open_unix_connection(path)
+    return UnixConnection(*endpoints)
+
 class UnixConnection:
-    async def __init__(self, path):
-        (self.reader, self.writer) = await asyncio.open_unix_connection(path)
+    def __init__(self, reader, writer):
+        self.reader = reader
+        self.writer = writer
 
     def __aiter__(self):
         return self.reader.__aiter__()
 
     def write(self, data):
-        return self.writer.write(data);
+        self.writer.write(data)

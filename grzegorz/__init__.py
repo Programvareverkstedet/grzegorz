@@ -1,15 +1,21 @@
 import asyncio
-from . import playlistmanage
+
+from . import mpv
+from . import nyasync
+
+mpv_control = mpv.MPVControl()
+
+async def test():
+    await mpv_control.send_request({"command":["loadfile",'grzegorz/res/logo.jpg']})
 
 async def entry():
-    await asyncio.wait([
-        playlistmanage.metadatafetch_loop(),
-    ])
+    await asyncio.gather(
+        mpv_control.run(),
+        test(),
+    )
 
 def main():
-    asyncio.get_event_loop().run_until_complete(
-        entry()
-    )
+    nyasync.run(entry())
 
 if __name__ == '__main__':
     main()
