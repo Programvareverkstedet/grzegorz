@@ -28,7 +28,7 @@ class Playlist:
         self.nonempty.notify()
         self.change.notify()
 
-    async def dequeue(self) -> PlaylistItem:
+    async def dequeue(self):
         await self.nonempty
         self.change.notify()
         return self.playlist.pop(0)
