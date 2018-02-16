@@ -1,3 +1,4 @@
+import os
 import asyncio
 import json
 
@@ -32,18 +33,25 @@ class MPV:
             await asyncio.sleep(0.1)
         else:
             raise Exception("MPV died before socket connected")
-
-        await asyncio.gather(
+        
+        self._future = asyncio.gather(
             self.ensure_running(),
             self.process_outgoing(),
             self.process_incomming(),
         )
+        await self._future
+
+    def _cleanup(self):
+        if os.path.exists(self._ipc_endpoint):
+            os.remove(self._ipc_endpoint)
+        self._future.cancel()#reduces a lot of errors on exit
 
     def is_running(self):
         return self.proc.returncode is None
 
     async def ensure_running(self):
         await self.proc.wait()
+        self._cleanup()
         raise Exception("MPV died unexpectedly")
 
     async def process_outgoing(self):
@@ -81,3 +89,8 @@ class MPVControl:
             # is the safest option.
             self.mpv.requests.put_nowait(msg)
             return await self.mpv.responses.get()
+    
+    #Shorthand command requests:
+    async def loadfile(self, file):
+        return await self.send_request({"command":["loadfile", file]})
+        
