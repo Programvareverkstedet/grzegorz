@@ -8,7 +8,7 @@ class MPV:
 
     def __init__(self):
         self.requests = nyasync.Queue()
-        self.responces = nyasync.Queue()
+        self.responses = nyasync.Queue()
         self.events = nyasync.Queue()
 
     async def run(self):
@@ -44,7 +44,7 @@ class MPV:
 
     async def ensure_running(self):
         await self.proc.wait()
-        raise Exception("MPV died unexpectedtly")
+        raise Exception("MPV died unexpectedly")
 
     async def process_outgoing(self):
         async for request in self.requests:
@@ -52,12 +52,12 @@ class MPV:
             self.ipc_conn.write(b'\n')
 
     async def process_incomming(self):
-        async for responce in self.ipc_conn:
-            msg = json.loads(responce)
+        async for response in self.ipc_conn:
+            msg = json.loads(response)
             if 'event' in msg:
                 self.events.put_nowait(msg)
-            else: # responce
-                self.responces.put_nowait(msg)
+            else: # response
+                self.responses.put_nowait(msg)
 
 class MPVControl:
     def __init__(self):
@@ -80,4 +80,4 @@ class MPVControl:
             # critical section. If await is FIFO, the lock is unnessesary. This
             # is the safest option.
             self.mpv.requests.put_nowait(msg)
-            return await self.mpv.responces.get()
+            return await self.mpv.responses.get()
