@@ -91,6 +91,35 @@ class MPVControl:
             return await self.mpv.responses.get()
     
     #Shorthand command requests:
-    async def loadfile(self, file):
-        return await self.send_request({"command":["loadfile", file]})
-        
+    async def loadfile(self, file):#appends to playlist and start playback if paused
+        return await self.send_request({"command":["loadfile", file, "append-play"]})
+    async def pause_get(self):
+        return await self.send_request({"command":["get_property", "pause"]})
+    async def pause_set(self, state):
+        return await self.send_request({"command":["set_property", "pause", bool(state)]})
+    async def volume_get(self):
+        return await self.send_request({"command":["get_property", "volume"]})
+    async def volume_set(self, volume):
+        return await self.send_request({"command":["set_property", "volume", volume]})
+    async def time_pos_get(self):
+        return await self.send_request({"command":["get_property", "time-pos"]})
+    async def time_remaining_get(self):
+        return await self.send_request({"command":["get_property", "time-remaining"]})
+    async def seek_relative(self, seconds):
+        return await self.send_request({"command":["seek", seconds, "relative"]})
+    async def seek_percent(self, percent):
+        return await self.send_request({"command":["seek", percent, "absolute-percent"]})
+    async def playlist_get(self):
+        return await self.send_request({"command":["get_property", "playlist"]})
+    async def playlist_next(self):
+        return await self.send_request({"command":["playlist-next", "weak"]})
+    async def playlist_prev(self):
+        return await self.send_request({"command":["playlist-prev", "weak"]})
+    async def playlist_clear(self):
+        return await self.send_request({"command":["playlist-clear"]})
+    async def playlist_remove(self, index=None):
+        return await self.send_request({"command":["playlist-remove", "current" if index==None else index]})
+    async def playlist_move(self, index1, index2):
+        return await self.send_request({"command":["playlist-move", index1, index2]})
+    async def playlist_shuffle(self):
+        return await self.send_request({"command":["playlist-shuffle"]})
