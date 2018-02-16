@@ -1,3 +1,3 @@
 #!/usr/bin/env python3
-from grzegorz import main
-main()
+from grzegorz import main, test
+main(tasks=[test()])

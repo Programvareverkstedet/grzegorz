@@ -1,2 +1,3 @@
 mpv==0.1
 youtube-dl
+sanic==0.7.0
