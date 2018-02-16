@@ -23,8 +23,82 @@ def response_text(func):
 async def root(request):
     return "Hello World!"
 
-@bp.get("/playlist")
+#@bp.get("/something")
 @response_json
-async def get_playlist(request):
-    request.app.config["mpv_control"].send_request()
-    pass
+async def noe(request):
+    return request.app.config["mpv_control"].loadfile(file)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].pause_get()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].pause_set(state)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].volume_get()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].volume_set(volume)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].time_pos_get()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].time_remaining_get()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].seek_relative(seconds)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].seek_percent(percent)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_get()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_next()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_prev()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_clear()
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_remove(index=None)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_move(index1, index2)
+
+#@bp.get("/something")
+@response_json
+async def noe(request):
+    return request.app.config["mpv_control"].playlist_shuffle()
