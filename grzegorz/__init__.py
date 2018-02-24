@@ -9,7 +9,8 @@ from . import api
 mpv_control = None#mpv.MPVControl()
 
 async def test():
-    await mpv_control.loadfile('grzegorz/res/logo.jpg')
+    resp = await mpv_control.loadfile('grzegorz/grzegorz/res/logo.jpg')
+    #print(resp)
 
 def main(host="0.0.0.0", port=8080, tasks:list = None):
     app = Sanic(__name__)

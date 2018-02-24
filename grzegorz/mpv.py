@@ -21,7 +21,7 @@ class MPV:
             '--fullscreen',
             '--no-terminal',
             '--keep-open', # Keep last frame of video on end of video
-            '--no-input-default-bindings',
+            #'--no-input-default-bindings',
             )
 
         while self.is_running():
@@ -92,11 +92,14 @@ class MPVControl:
     
     #Shorthand command requests:
     async def loadfile(self, file):#appends to playlist and start playback if paused
-        return await self.send_request({"command":["loadfile", file, "append-play"]})
+        resp = await self.send_request({"command":["loadfile", file, "append-play"]})
+        return resp["error"] == "success"
     async def pause_get(self):
-        return await self.send_request({"command":["get_property", "pause"]})
+        resp = await self.send_request({"command":["get_property", "pause"]})
+        return resp["data"] if "data" in resp else None
     async def pause_set(self, state):
-        return await self.send_request({"command":["set_property", "pause", bool(state)]})
+        resp = await self.send_request({"command":["set_property", "pause", bool(state)]})
+        return resp["error"] == "success"
     async def volume_get(self):
         return await self.send_request({"command":["get_property", "volume"]})
     async def volume_set(self, volume):
@@ -110,11 +113,14 @@ class MPVControl:
     async def seek_percent(self, percent):
         return await self.send_request({"command":["seek", percent, "absolute-percent"]})
     async def playlist_get(self):
-        return await self.send_request({"command":["get_property", "playlist"]})
+        resp = await self.send_request({"command":["get_property", "playlist"]})
+        return resp["data"] if "data" in resp else None
     async def playlist_next(self):
-        return await self.send_request({"command":["playlist-next", "weak"]})
+        resp = await self.send_request({"command":["playlist-next", "weak"]})
+        return resp["error"] == "success"
     async def playlist_prev(self):
-        return await self.send_request({"command":["playlist-prev", "weak"]})
+        resp = await self.send_request({"command":["playlist-prev", "weak"]})
+        return resp["error"] == "success"
     async def playlist_clear(self):
         return await self.send_request({"command":["playlist-clear"]})
     async def playlist_remove(self, index=None):
