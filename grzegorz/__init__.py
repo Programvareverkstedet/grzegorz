@@ -1,5 +1,7 @@
-import asyncio
+import asyncio, uvloop
 from sanic import Sanic
+from sanic_openapi import swagger_blueprint, openapi_blueprint
+from signal import signal, SIGINT
 
 from . import mpv
 from . import nyasync
@@ -8,35 +10,38 @@ from . import api
 #global variable:
 mpv_control = None#mpv.MPVControl()
 
-async def test():
-    resp = await mpv_control.loadfile('grzegorz/grzegorz/res/logo.jpg')
-    #print(resp)
+def make_sanic_app(host="0.0.0.0", port=8080):
+    global mpv_control
 
-def main(host="0.0.0.0", port=8080, tasks:list = None):
     app = Sanic(__name__)
     app.blueprint(api.bp, url_prefix="/api")
+    app.blueprint(openapi_blueprint)
+    app.blueprint(swagger_blueprint)
     
-    #used to ensure sanic/uvloop creates its asyncio loop before MPVControl tries to use one itself
+    asyncio.set_event_loop(uvloop.new_event_loop())
+    server_coro = app.create_server(host=host, port=port)
+    loop = asyncio.get_event_loop()
+    server_task = asyncio.ensure_future(server_coro)
+    signal(SIGINT, lambda s, f: loop.stop())
+    
+    mpv_control = mpv.MPVControl()
+    app.config["mpv_control"] = mpv_control
     async def runMPVControl():
-        global mpv_control
-        
-        mpv_control = mpv.MPVControl()
-        app.config["mpv_control"] = mpv_control
         try:
             await mpv_control.run()
         except Exception as e:
             print(e)
-        
         print("mpv is no longer running. Stopping Sanic...")
         app.stop()
+    asyncio.ensure_future(runMPVControl())
+    
+    return loop, app
 
-    if not tasks: tasks = []
-    tasks.insert(0, runMPVControl())
-    
+def main(tasks:list = []):
+    loop, app = make_sanic_app()
     for task in tasks:
-        app.add_task(task)#instead of ensure_future
-    
-    app.run(host=host, port=port)
+        asyncio.ensure_future(task)
+    loop.run_forever()
     
 if __name__ == '__main__':
-    main(tasks=[test()])
+    main()

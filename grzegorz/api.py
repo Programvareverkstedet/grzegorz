@@ -1,5 +1,6 @@
-from sanic import Blueprint, response
 import asyncio
+from sanic import Blueprint, response
+from functools import wraps
 from . import mpv
 
 bp = Blueprint("grzegorz-api")
@@ -8,6 +9,7 @@ bp = Blueprint("grzegorz-api")
 
 #route decorators:
 def response_json(func):
+    @wraps(func)
     async def newfunc(*args, **kwargs):
         try: 
             mpv_control = args[0].app.config["mpv_control"]
@@ -26,6 +28,7 @@ def response_json(func):
                 })
     return newfunc
 def response_text(func):
+    @wraps(func)
     async def newfunc(*args, **kwargs):
         body = await func(*args, **kwargs)
         return response.text(body)
