@@ -22,3 +22,9 @@ tar -c "${files_not_ignored[@]}" |
 ssh -T "$TARGET" "
 	systemctl --user restart grzegorz@0
 	"
+
+sleep 1
+
+ssh -T "$TARGET" "
+	systemctl --user status grzegorz@0
+	"
