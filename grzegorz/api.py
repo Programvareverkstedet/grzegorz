@@ -106,7 +106,8 @@ async def noe(request, mpv_control):
 async def playlist_get(request, mpv_control):
     value = await mpv_control.playlist_get()
     for i, v in enumerate(value):
-        pass
+        if "current" in v and v["current"] == True:
+            v["playing"] = await mpv_control.pause_get() == False
     return locals()
 
 @bp.post("/playlist/next")
