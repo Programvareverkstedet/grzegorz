@@ -31,6 +31,8 @@ def response_text(func):
         return response.text(body)
     return newfunc
 
+class APIError(Exception): pass
+
 #routes:
 @bp.get("/")
 @response_text
@@ -40,34 +42,38 @@ async def root(request):
 @bp.post("/load")
 @response_json
 async def loadfile(request, mpv_control):
-    if "source" not in request.json:
-        return {"error", "no param \"source\""}
-    success = await mpv_control.loadfile(request.json["source"])
+    if "path" not in request.form:
+        raise APIError("no form argument \"path\" provided")
+    success = await mpv_control.loadfile(request.form["path"][0])
     return locals()
 
 @bp.get("/play")
 @response_json
-async def get_play(request, mpv_control):
+async def play_get(request, mpv_control):
     value = await mpv_control.pause_get() == False
     return locals()
 
 @bp.post("/play")
 @response_json
-async def set_play(request, mpv_control):
-    success = await request.app.config["mpv_control"] \
+async def play_set(request, mpv_control):
+    if "play" not in request.form:
+        raise APIError("No form argument \"play\" provided")
+    success = await mpv_control \
         .pause_set(request.form["play"][0] not in ["true", "1"])
     return locals()
 
 @bp.get("/volume")
 @response_json
-async def get_volume(request, mpv_control):
+async def volume_get(request, mpv_control):
     value = await mpv_control.volume_get()
     return locals()
 
 @bp.post("/volume")
 @response_json
-async def set_volume(request, mpv_control):
-    success = await request.app.config["mpv_control"] \
+async def volume_set(request, mpv_control):
+    if "volume" not in request.form:
+        raise APIError("No form argument \"volume\" provided")
+    success = await mpv_control \
         .volume_set(int(request.form["volume"][0]))
     return locals()
 
@@ -97,7 +103,7 @@ async def noe(request, mpv_control):
 
 @bp.get("/playlist")
 @response_json
-async def noe(request, mpv_control):
+async def playlist_get(request, mpv_control):
     value = await mpv_control.playlist_get()
     for i, v in enumerate(value):
         pass
@@ -105,13 +111,13 @@ async def noe(request, mpv_control):
 
 @bp.post("/playlist/next")
 @response_json
-async def noe(request, mpv_control):
+async def playlist_next(request, mpv_control):
     success = await mpv_control.playlist_next()
     return locals()
 
 @bp.post("/playlist/previous")
 @response_json
-async def noe(request, mpv_control):
+async def playlist_previous(request, mpv_control):
     success = await mpv_control.playlist_prev()
     return locals()
 
