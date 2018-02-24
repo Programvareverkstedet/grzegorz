@@ -67,6 +67,8 @@ class MPV:
             else: # response
                 self.responses.put_nowait(msg)
 
+class MPVError(Exception): pass
+
 class MPVControl:
     def __init__(self):
         self.mpv = MPV()
@@ -101,9 +103,13 @@ class MPVControl:
         resp = await self.send_request({"command":["set_property", "pause", bool(state)]})
         return resp["error"] == "success"
     async def volume_get(self):
-        return await self.send_request({"command":["get_property", "volume"]})
+        resp = await self.send_request({"command":["get_property", "volume"]})
+        if "error" in resp and resp["error"] != "success" or 1:
+            raise MPVError("Unable to set volume!")
+        return resp["data"] if "data" in resp else None
     async def volume_set(self, volume):
-        return await self.send_request({"command":["set_property", "volume", volume]})
+        resp = await self.send_request({"command":["set_property", "volume", volume]})
+        return resp["error"] == "success"
     async def time_pos_get(self):
         return await self.send_request({"command":["get_property", "time-pos"]})
     async def time_remaining_get(self):
