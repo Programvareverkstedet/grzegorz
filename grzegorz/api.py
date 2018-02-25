@@ -1,9 +1,10 @@
 import asyncio
 from sanic import Blueprint, response
+from sanic_openapi import doc
 from functools import wraps
 from . import mpv
 
-bp = Blueprint("grzegorz-api")
+bp = Blueprint("grzegorz-api", strict_slashes=True)
 # this blueprint assumes a mpv.MPVControl instance is available
 # at request.app.config["mpv_control"]
 
@@ -12,15 +13,16 @@ def response_json(func):
     @wraps(func)
     async def newfunc(*args, **kwargs):
         try: 
-            mpv_control = args[0].app.config["mpv_control"]
-            body = await func(*args, mpv_control, **kwargs)
-            if "error" not in body:
-                body["error"] = False
-            if "request" in body:
-                del body["request"]
-            if "mpv_control" in body:
-                del body["mpv_control"]
-            return response.json(body)
+            request = args[0]
+            mpv_control = request.app.config["mpv_control"]
+            out = await func(*args, mpv_control, **kwargs)
+            if "error" not in out:
+                out["error"] = False
+            if "request" in out:
+                del out["request"]
+            if "mpv_control" in out:
+                del out["mpv_control"]
+            return response.json(out)
         except Exception as e:
             return response.json({
                 "error": e.__class__.__name__,
@@ -37,89 +39,106 @@ def response_text(func):
 class APIError(Exception): pass
 
 #routes:
-@bp.get("/")
+@bp.get("")
+@doc.exclude(True)
 @response_text
 async def root(request):
-    return "Hello World!"
+    return "Hello friend, I hope you're having a lovely day"
 
 @bp.post("/load")
+@doc.summary("Add item to playlist")
+@doc.consumes({"path": doc.String("Link to the resource to enqueue")}, required=True)
 @response_json
 async def loadfile(request, mpv_control):
-    if "path" not in request.form:
-        raise APIError("no form argument \"path\" provided")
-    success = await mpv_control.loadfile(request.form["path"][0])
+    if "path" not in request.args:
+        raise APIError("No query parameter \"path\" provided")
+    success = await mpv_control.loadfile(request.args["path"][0])
     return locals()
 
 @bp.get("/play")
+@doc.summary("Check whether the player is paused or playing")
 @response_json
 async def play_get(request, mpv_control):
     value = await mpv_control.pause_get() == False
     return locals()
 
 @bp.post("/play")
+@doc.summary("Set whether the player is paused or playing")
+@doc.consumes({"play": doc.Boolean("Whether to be playing or not")})
 @response_json
 async def play_set(request, mpv_control):
-    if "play" not in request.form:
-        raise APIError("No form argument \"play\" provided")
+    if "play" not in request.args:
+        raise APIError("No query parameter \"play\" provided")
     success = await mpv_control \
-        .pause_set(request.form["play"][0] not in ["true", "1"])
+        .pause_set(request.args["play"][0] not in ["true", "1", True])
     return locals()
 
 @bp.get("/volume")
+@doc.summary("Get the current player volume")
 @response_json
 async def volume_get(request, mpv_control):
     value = await mpv_control.volume_get()
     return locals()
 
 @bp.post("/volume")
+@doc.summary("Set the player volume")
+@doc.consumes({"volume": doc.Integer("A number between 0 and 100")})
 @response_json
 async def volume_set(request, mpv_control):
-    if "volume" not in request.form:
-        raise APIError("No form argument \"volume\" provided")
+    if "volume" not in request.args:
+        raise APIError("No query parameter \"volume\" provided")
     success = await mpv_control \
-        .volume_set(int(request.form["volume"][0]))
+        .volume_set(int(request.args["volume"][0]))
     return locals()
 
 #@bp.get("/something")
+@doc.summary("")
 @response_json
 async def noe(request, mpv_control):
     body = await mpv_control.time_pos_get()
     return body
 
 #@bp.get("/something")
+@doc.summary("")
 @response_json
 async def noe(request, mpv_control):
     body = await mpv_control.time_remaining_get()
     return body
 
 #@bp.get("/something")
+@doc.summary("")
 @response_json
 async def noe(request, mpv_control):
     body = await mpv_control.seek_relative(seconds)
     return body
 
 #@bp.get("/something")
+@doc.summary("")
 @response_json
 async def noe(request, mpv_control):
     body = await mpv_control.seek_percent(percent)
     return body
 
 @bp.get("/playlist")
+@doc.summary("Get the current playlist")
 @response_json
 async def playlist_get(request, mpv_control):
     value = await mpv_control.playlist_get()
     for i, v in enumerate(value):
         if "current" in v and v["current"] == True:
             v["playing"] = await mpv_control.pause_get() == False
+    del i, v
     return locals()
 
 @bp.post("/playlist/next")
+@doc.summary("Skip to the next item in the playlist")
 @response_json
 async def playlist_next(request, mpv_control):
     success = await mpv_control.playlist_next()
     return locals()
 
 @bp.post("/playlist/previous")
+@doc.summary("Go back to the previous item in the playlist")
 @response_json
 async def playlist_previous(request, mpv_control):
     success = await mpv_control.playlist_prev()

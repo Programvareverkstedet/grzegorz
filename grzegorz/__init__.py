@@ -18,6 +18,17 @@ def make_sanic_app(host="0.0.0.0", port=8080):
     app.blueprint(openapi_blueprint)
     app.blueprint(swagger_blueprint)
     
+    #openapi:
+    app.config.API_VERSION = '1.0'
+    app.config.API_TITLE = 'Grzegorz API'
+    app.config.API_DESCRIPTION \
+        = 'The Grzegorz Brzeczyszczykiewicz API, used to control a running MPV instance'
+    #app.config.API_TERMS_OF_SERVICE = ''# Supposed to be a link
+    app.config.API_PRODUCES_CONTENT_TYPES = ['application/json']
+    app.config.API_CONTACT_EMAIL = 'drift@pvv.ntnu.no'
+    #app.config.API_LICENSE_NAME = 'BSD 3-Clause License'
+    #app.config.API_LICENSE_URL = 'todo'
+    
     asyncio.set_event_loop(uvloop.new_event_loop())
     server_coro = app.create_server(host=host, port=port)
     loop = asyncio.get_event_loop()
