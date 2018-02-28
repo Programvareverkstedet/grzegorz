@@ -70,7 +70,7 @@ async def play_set(request, mpv_control):
     if "play" not in request.args:
         raise APIError("No query parameter \"play\" provided")
     success = await mpv_control \
-        .pause_set(request.args["play"][0] not in ["true", "1", True])
+        .pause_set(str(request.args["play"][0]).lower() not in ["true", "1"])
     return locals()
 
 @bp.get("/volume")
@@ -125,6 +125,7 @@ async def noe(request, mpv_control):
 async def playlist_get(request, mpv_control):
     value = await mpv_control.playlist_get()
     for i, v in enumerate(value):
+        v["index"] = i
         if "current" in v and v["current"] == True:
             v["playing"] = await mpv_control.pause_get() == False
     del i, v
