@@ -113,9 +113,17 @@ class MPVControl:
             raise MPVError("Unable to set volume!")
         return resp["error"] == "success"
     async def time_pos_get(self):
-        return await self.send_request({"command":["get_property", "time-pos"]})
+        resp = await self.send_request({"command":["get_property", "time-pos"]})
+        if "error" in resp and resp["error"] != "success":
+            raise MPVError("Unable to get time pos: " + resp["error"])
+        return resp["data"] if "data" in resp else None
     async def time_remaining_get(self):
-        return await self.send_request({"command":["get_property", "time-remaining"]})
+        resp = await self.send_request({"command":["get_property", "time-remaining"]})
+        if "error" in resp and resp["error"] != "success":
+            raise MPVError("Unable to get time left:" + resp["error"])
+        return resp["data"] if "data" in resp else None
+    async def seek_absolute(self, seconds):
+        return await self.send_request({"command":["seek", seconds, "absolute"]})
     async def seek_relative(self, seconds):
         return await self.send_request({"command":["seek", seconds, "relative"]})
     async def seek_percent(self, percent):

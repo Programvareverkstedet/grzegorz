@@ -91,33 +91,36 @@ async def volume_set(request, mpv_control):
         .volume_set(int(request.args["volume"][0]))
     return locals()
 
-#@bp.get("/something")
-@doc.summary("")
+@bp.get("/time")
+@doc.summary("Get current playback position")
 @response_json
-async def noe(request, mpv_control):
-    body = await mpv_control.time_pos_get()
-    return body
+async def time_get(request, mpv_control):
+    value = {
+        "current": await mpv_control.time_pos_get(),
+        "left": await mpv_control.time_remaining_get(),
+    }
+    value["total"] = value["current"] + value["left"]
+    return locals()
+
+@bp.post("/time")
+@doc.summary("Set playback position")
+@doc.consumes({"pos": doc.Float("Seconds to seek to"), "pos": doc.Integer("Percent to seek to")})
+@response_json
+async def time_set(request, mpv_control):
+    if "pos" in request.args:
+        success = await mpv_control.seek_absolute(float(request.args["pos"][0]))
+    elif "percent" in request.args:
+        success = await mpv_control.seek_percent(int(request.args["percent"][0]))
+    else:
+        raise APIError("No query parameter \"pos\" or \"percent\"provided")
+    return locals()
 
 #@bp.get("/something")
 @doc.summary("")
 @response_json
 async def noe(request, mpv_control):
-    body = await mpv_control.time_remaining_get()
-    return body
-
-#@bp.get("/something")
-@doc.summary("")
-@response_json
-async def noe(request, mpv_control):
-    body = await mpv_control.seek_relative(seconds)
-    return body
-
-#@bp.get("/something")
-@doc.summary("")
-@response_json
-async def noe(request, mpv_control):
-    body = await mpv_control.seek_percent(percent)
-    return body
+    value = await mpv_control.seek_percent(percent)
+    return locals()
 
 @bp.get("/playlist")
 @doc.summary("Get the current playlist")
@@ -148,23 +151,23 @@ async def playlist_previous(request, mpv_control):
 #@bp.get("/something")
 @response_json
 async def noe(request, mpv_control):
-    body = await mpv_control.playlist_clear()
-    return body
+    value = await mpv_control.playlist_clear()
+    return locals()
 
 #@bp.get("/something")
 @response_json
 async def noe(request, mpv_control):
-    body = await mpv_control.playlist_remove(index=None)
-    return body
+    value = await mpv_control.playlist_remove(index=None)
+    return locals()
 
 #@bp.get("/something")
 @response_json
 async def noe(request, mpv_control):
-    body = await mpv_control.playlist_move(index1, index2)
-    return body
+    value = await mpv_control.playlist_move(index1, index2)
+    return locals()
 
 #@bp.get("/something")
 @response_json
 async def noe(request, mpv_control):
-    body = await mpv_control.playlist_shuffle()
-    return body
+    value = await mpv_control.playlist_shuffle()
+    return locals()
