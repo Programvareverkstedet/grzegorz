@@ -92,6 +92,18 @@ class MPVControl:
             self.mpv.requests.put_nowait(msg)
             return await self.mpv.responses.get()
     
+    #other commands:
+    async def wake_screen(self):
+        p = await asyncio.create_subprocess_exec(
+            "xset",
+            "-display",
+            os.environ["DISPLAY"],
+            "dpms",
+            "force",
+            "on"
+            )
+        code = await process.wait()
+    
     #Shorthand command requests:
     async def loadfile(self, file):#appends to playlist and start playback if paused
         resp = await self.send_request({"command":["loadfile", file, "append-play"]})

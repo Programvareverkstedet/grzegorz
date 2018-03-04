@@ -3,6 +3,7 @@ from sanic import Blueprint, response
 from sanic_openapi import doc
 from functools import wraps
 from . import mpv
+from .playlist_data import PlaylistDataCache
 
 bp = Blueprint("grzegorz-api", strict_slashes=True)
 # this blueprint assumes a mpv.MPVControl instance is available
@@ -38,6 +39,8 @@ def response_text(func):
 
 class APIError(Exception): pass
 
+PLAYLIST_DATA_CACHE = PlaylistDataCache()
+
 #routes:
 @bp.get("")
 @doc.exclude(True)
@@ -48,10 +51,13 @@ async def root(request):
 @bp.post("/load")
 @doc.summary("Add item to playlist")
 @doc.consumes({"path": doc.String("Link to the resource to enqueue")}, required=True)
+@doc.consumes({"body":doc.Dictionary(description="Any data you want stored with the queued item")}, location="body")
 @response_json
 async def loadfile(request, mpv_control):
     if "path" not in request.args:
         raise APIError("No query parameter \"path\" provided")
+    if request.json:
+        PLAYLIST_DATA_CACHE.add_data(request.args["path"][0], request.json)
     success = await mpv_control.loadfile(request.args["path"][0])
     return locals()
 
@@ -127,6 +133,7 @@ async def noe(request, mpv_control):
 @response_json
 async def playlist_get(request, mpv_control):
     value = await mpv_control.playlist_get()
+    value = list(PLAYLIST_DATA_CACHE.add_data_to_playlist(value))
     for i, v in enumerate(value):
         v["index"] = i
         if "current" in v and v["current"] == True:
