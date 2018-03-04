@@ -189,8 +189,9 @@ async def playlist_move(request, mpv_control):
         int(request.args["index2"][0]))
     return locals()
 
-#@bp.get("/something")
+@bp.post("/playlist/shuffle")
+@doc.summary("Clears single item or whole playlist")
 @response_json
-async def noe(request, mpv_control):
-    value = await mpv_control.playlist_shuffle()
+async def playlist_shuffle(request, mpv_control):
+    success = await mpv_control.playlist_shuffle()
     return locals()
