@@ -138,7 +138,7 @@ async def playlist_get(request, mpv_control):
         v["index"] = i
         if "current" in v and v["current"] == True:
             v["playing"] = await mpv_control.pause_get() == False
-    del i, v
+    if value: del i, v
     return locals()
 
 @bp.post("/playlist/next")
@@ -155,16 +155,17 @@ async def playlist_previous(request, mpv_control):
     success = await mpv_control.playlist_prev()
     return locals()
 
-#@bp.get("/something")
+@bp.delete("/playlist")
+@doc.summary("Clears single item or whole playlist")
+@doc.consumes({"index": doc.Integer("Index to item in playlist to remove. If unset, the whole playlist is cleared")})
 @response_json
-async def noe(request, mpv_control):
-    value = await mpv_control.playlist_clear()
-    return locals()
-
-#@bp.get("/something")
-@response_json
-async def noe(request, mpv_control):
-    value = await mpv_control.playlist_remove(index=None)
+async def playlist_remove_or_clear(request, mpv_control):
+    if "index" in request.args:
+        success = await mpv_control.playlist_remove(int(request.args["index"][0]))
+        action = f"remove #{request.args['index'][0]}"
+    else:
+        success = await mpv_control.playlist_clear()
+        action = "clear all"
     return locals()
 
 #@bp.get("/something")
