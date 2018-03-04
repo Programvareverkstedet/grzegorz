@@ -110,6 +110,8 @@ class MPVControl:
         return resp["error"] == "success"
     async def pause_get(self):
         resp = await self.send_request({"command":["get_property", "pause"]})
+        if "error" in resp and resp["error"] != "success":
+            raise MPVError("Unable to get whether paused or not: " + resp["error"])
         return resp["data"] if "data" in resp else None
     async def pause_set(self, state):
         resp = await self.send_request({"command":["set_property", "pause", bool(state)]})
@@ -117,12 +119,10 @@ class MPVControl:
     async def volume_get(self):
         resp = await self.send_request({"command":["get_property", "volume"]})
         if "error" in resp and resp["error"] != "success":
-            raise MPVError("Unable to get volume!")
+            raise MPVError("Unable to get volume! " + resp["error"])
         return resp["data"] if "data" in resp else None
     async def volume_set(self, volume):
         resp = await self.send_request({"command":["set_property", "volume", volume]})
-        if "error" in resp and resp["error"] != "success":
-            raise MPVError("Unable to set volume!")
         return resp["error"] == "success"
     async def time_pos_get(self):
         resp = await self.send_request({"command":["get_property", "time-pos"]})
@@ -135,13 +135,18 @@ class MPVControl:
             raise MPVError("Unable to get time left:" + resp["error"])
         return resp["data"] if "data" in resp else None
     async def seek_absolute(self, seconds):
-        return await self.send_request({"command":["seek", seconds, "absolute"]})
+        resp = await self.send_request({"command":["seek", seconds, "absolute"]})
+        return resp["data"] if "data" in resp else None
     async def seek_relative(self, seconds):
-        return await self.send_request({"command":["seek", seconds, "relative"]})
+        resp = await self.send_request({"command":["seek", seconds, "relative"]})
+        return resp["data"] if "data" in resp else None
     async def seek_percent(self, percent):
-        return await self.send_request({"command":["seek", percent, "absolute-percent"]})
+        resp = await self.send_request({"command":["seek", percent, "absolute-percent"]})
+        return resp["data"] if "data" in resp else None
     async def playlist_get(self):
         resp = await self.send_request({"command":["get_property", "playlist"]})
+        if "error" in resp and resp["error"] != "success":
+            raise MPVError("Unable to get playlist:" + resp["error"])
         return resp["data"] if "data" in resp else None
     async def playlist_next(self):
         resp = await self.send_request({"command":["playlist-next", "weak"]})
@@ -150,10 +155,14 @@ class MPVControl:
         resp = await self.send_request({"command":["playlist-prev", "weak"]})
         return resp["error"] == "success"
     async def playlist_clear(self):
-        return await self.send_request({"command":["playlist-clear"]})
+        resp = await self.send_request({"command":["playlist-clear"]})
+        return resp["error"] == "success"
     async def playlist_remove(self, index=None):
-        return await self.send_request({"command":["playlist-remove", "current" if index==None else index]})
+        resp = await self.send_request({"command":["playlist-remove", "current" if index==None else index]})
+        return resp["error"] == "success"
     async def playlist_move(self, index1, index2):
-        return await self.send_request({"command":["playlist-move", index1, index2]})
+        resp = await self.send_request({"command":["playlist-move", index1, index2]})
+        return resp["error"] == "success"
     async def playlist_shuffle(self):
-        return await self.send_request({"command":["playlist-shuffle"]})
+        resp = await self.send_request({"command":["playlist-shuffle"]})
+        return resp["error"] == "success"
