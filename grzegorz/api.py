@@ -168,10 +168,25 @@ async def playlist_remove_or_clear(request, mpv_control):
         action = "clear all"
     return locals()
 
-#@bp.get("/something")
+@bp.post("/playlist/move")
+@doc.summary("Move playlist item to new position")
+@doc.description(
+    "Move the playlist entry at index1, so that it takes the "
+    "place of the entry index2. (Paradoxically, the moved playlist "
+    "entry will not have the index value index2 after moving if index1 "
+    "was lower than index2, because index2 refers to the target entry, "
+    "not the index the entry will have after moving.)")
+@doc.consumes({"index2": int}, required=True)
+@doc.consumes({"index1": int}, required=True)
 @response_json
-async def noe(request, mpv_control):
-    value = await mpv_control.playlist_move(index1, index2)
+async def playlist_move(request, mpv_control):
+    if "index1" not in request.args or "index2" not in request.args:
+        raise APIError(
+            "Missing at least one of the required query "
+            "parameters: \"index1\" and \"index2\"")
+    success = await mpv_control.playlist_move(
+        int(request.args["index1"][0]),
+        int(request.args["index2"][0]))
     return locals()
 
 #@bp.get("/something")
