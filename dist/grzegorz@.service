@@ -1,0 +1,14 @@
+[Unit]
+Description=Grzegorz at display %i
+
+Requires=xorg@%i.socket
+Requires=xorg@%i.service
+After=xorg@%i.socket
+After=xorg@%i.service
+
+[Service]
+Environment="DISPLAY=:%i"
+ExecStart=/usr/bin/python grzegorz/main.py
+
+[Install]
+WantedBy=default.target
