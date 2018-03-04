@@ -121,13 +121,6 @@ async def time_set(request, mpv_control):
         raise APIError("No query parameter \"pos\" or \"percent\"provided")
     return locals()
 
-#@bp.get("/something")
-@doc.summary("")
-@response_json
-async def noe(request, mpv_control):
-    value = await mpv_control.seek_percent(percent)
-    return locals()
-
 @bp.get("/playlist")
 @doc.summary("Get the current playlist")
 @response_json
