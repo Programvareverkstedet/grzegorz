@@ -45,6 +45,7 @@ def make_sanic_app(host="0.0.0.0", port=8080):
         print("mpv is no longer running. Stopping Sanic...")
         app.stop()
     asyncio.ensure_future(runMPVControl())
+    asyncio.ensure_future(api.PLAYLIST_DATA_CACHE.run())
     
     return loop, app
 

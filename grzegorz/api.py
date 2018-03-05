@@ -39,7 +39,7 @@ def response_text(func):
 
 class APIError(Exception): pass
 
-PLAYLIST_DATA_CACHE = PlaylistDataCache()
+PLAYLIST_DATA_CACHE = PlaylistDataCache(auto_fetch_data=True)
 
 #routes:
 @bp.get("")
