@@ -2,8 +2,8 @@ import asyncio
 
 def ify(func):
     """Decorate func to run async in default executor"""
-    asyncloop = asyncio.get_event_loop()
     async def asyncified(*args, **kwargs):
+        asyncloop = asyncio.get_event_loop()
         return await asyncloop.run_in_executor(
             None, lambda: func(*args, **kwargs))
     return asyncified
