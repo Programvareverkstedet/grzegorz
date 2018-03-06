@@ -24,8 +24,7 @@ When finished, you may run the server with:
     python3 main.py
 
 The server should now be available at `http://localhost:8080/`.
-You may change the address and port in the file named `config.py`
-
+You may change the address and port in the file named `config.py` which is copied from `default_config.py` when running `main.py` the first time
 
 ## Making Grzegorz run on boot
 

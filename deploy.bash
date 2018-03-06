@@ -10,14 +10,18 @@ array=(); while IFS= read -rd '' item; do array+=("$item"); done < \
 files_not_ignored=("${array[@]}")
 
 ssh -T "$TARGET" "
-	rm -rf $TARGET_PATH
-	mkdir -p $TARGET_PATH
+	mv -v '$TARGET_PATH/config.py' /tmp/grzegorz_config.py
+	rm -rfv $TARGET_PATH
+	mkdir -pv $TARGET_PATH
+	mv -v /tmp/grzegorz_config.py '$TARGET_PATH/config.py'
 	"
 
+echo '== Copying files to target: =='
 tar -c "${files_not_ignored[@]}" |
 	ssh -T "$TARGET" "
 	tar -vxC $TARGET_PATH
 	"
+echo '== DONE: =='
 
 ssh -T "$TARGET" "
 	systemctl --user restart grzegorz@0

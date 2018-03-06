@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
+import os, shutil
 import asyncio
 import grzegorz
+
+basedir = os.path.dirname(os.path.abspath(__file__))
+if not os.path.exists(os.path.join(basedir, "config.py")):
+	print("copying default_config.py to config.py...")
+	shutil.copy(os.path.join(basedir, "default_config.py"), os.path.join(basedir, "config.py"))
 import config
 
 async def grzegorz_splash():
