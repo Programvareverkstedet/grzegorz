@@ -1,8 +1,9 @@
 [Unit]
-Description=Socket for xorg at display %i
+Description=Xorg server at display %i
 
-[Socket]
-ListenStream=/tmp/.X11-unix/X%i
+Requires=xorg@%i.socket
+After=xorg@%i.socket
 
-[Install]
-WantedBy=sockets.target
+[Service]
+ExecStart=/usr/bin/Xorg :%i -nolisten tcp -noreset -verbose 2 "vt${XDG_VTNR}"
+SuccessExitStatus=0 1
