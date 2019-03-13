@@ -148,6 +148,17 @@ async def playlist_previous(request, mpv_control):
     success = await mpv_control.playlist_prev()
     return locals()
 
+@bp.post("/playlist/goto")
+@doc.summary("Go chosen item in the playlist")
+@doc.consumes({"index": doc.Integer("The 0 indexed playlist item to go to")}, required=True)
+@response_json
+async def playlist_goto(request, mpv_control):
+    if "index" not in request.args:
+        raise APIError("Missing the required parameter: \"index\"")
+    success = await mpv_control.playlist_goto(
+        int(request.args["index"][0]))
+    return locals()
+
 @bp.delete("/playlist")
 @doc.summary("Clears single item or whole playlist")
 @doc.consumes({"index": doc.Integer("Index to item in playlist to remove. If unset, the whole playlist is cleared")})

@@ -155,6 +155,9 @@ class MPVControl:
     async def playlist_prev(self):
         resp = await self.send_request({"command":["playlist-prev", "weak"]})
         return resp["error"] == "success"
+    async def playlist_goto(self, index):
+        resp = await self.send_request({"command":["set_property", "playlist-pos", index]})
+        return resp["error"] == "success"
     async def playlist_clear(self):
         resp = await self.send_request({"command":["playlist-clear"]})
         return resp["error"] == "success"
