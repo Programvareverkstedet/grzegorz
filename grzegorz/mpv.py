@@ -20,6 +20,7 @@ class MPV:
             '--force-window',
             '--fullscreen',
             '--no-terminal',
+            '--load-unsafe-playlists',
             '--keep-open', # Keep last frame of video on end of video
             #'--no-input-default-bindings',
             )
