@@ -29,10 +29,10 @@ def filter_query_params(url, allowed=[]):
 def get_youtube_dl_metadata(url, ydl = youtube_dl.YoutubeDL()):
 	if urlsplit(url).scheme == "":
 		return None
-	if urlsplit(url).netloc.lower() in ("www.youtube.com", "youtube.com", "youtub.be"):
+	if urlsplit(url).netloc.lower() in ("www.youtube.com", "youtube.com", "youtu.be"):
 		#Stop it from doing the whole playlist
 		url = filter_query_params(url, allowed=["v"])
-	if urlsplit(url).scheme == "ytdl":
+	elif urlsplit(url).scheme == "ytdl":
 		url = f"https://youtube.com/watch?v={urlsplit(url).netloc}"
 	
 	try:
