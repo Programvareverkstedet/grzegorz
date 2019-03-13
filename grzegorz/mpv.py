@@ -167,3 +167,9 @@ class MPVControl:
     async def playlist_shuffle(self):
         resp = await self.send_request({"command":["playlist-shuffle"]})
         return resp["error"] == "success"
+    async def playlist_get_looping(self):
+        resp = await self.send_request({"command":["get_property", "loop-playlist"]})
+        return resp["data"] == "inf" if "data" in resp else False
+    async def playlist_set_looping(self, value):
+        resp = await self.send_request({"command":["set_property", "loop-playlist", "inf" if value else "no"]})
+        return resp["error"] == "success"

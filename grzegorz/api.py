@@ -188,3 +188,21 @@ async def playlist_move(request, mpv_control):
 async def playlist_shuffle(request, mpv_control):
     success = await mpv_control.playlist_shuffle()
     return locals()
+
+@bp.get("/playlist/loop")
+@doc.summary("See whether it loops the playlist or not")
+@response_json
+async def playlist_get_looping(request, mpv_control):
+    value = await mpv_control.playlist_get_looping()
+    return locals()
+
+@bp.post("/playlist/loop")
+@doc.summary("Sets whether to loop the playlist or not")
+@doc.consumes({"loop": doc.Boolean("Whether to be looping or not")}, required=True)
+@response_json
+async def playlist_set_looping(request, mpv_control):
+    if "loop" not in request.args:
+        raise APIError("Missing the required parameter: \"loop\"")
+    success = await mpv_control.playlist_set_looping(
+        request.args["loop"][0].lower() in ("1", "true", "on", "inf"))
+    return locals()
