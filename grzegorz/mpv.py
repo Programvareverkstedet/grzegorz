@@ -87,7 +87,7 @@ class MPVControl:
             pass
 
     async def send_request(self, msg):
-        with await self.request_lock:
+        async with self.request_lock:
             # Note: If asyncio.Lock is FIFO, the put can be moved out of the
             # critical section. If await is FIFO, the lock is unnessesary. This
             # is the safest option.
