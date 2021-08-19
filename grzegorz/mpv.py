@@ -1,6 +1,7 @@
 import os
 import asyncio
 import json
+from shlex import quote
 
 from . import nyasync
 
@@ -15,7 +16,7 @@ class MPV:
     async def run(self):
         self.proc = await asyncio.create_subprocess_exec(
             'mpv',
-            '--input-ipc-server', self._ipc_endpoint,
+            '--input-ipc-server=' + quote(self._ipc_endpoint),
             '--idle',
             '--force-window',
             '--fullscreen',
