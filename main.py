@@ -10,8 +10,9 @@ if not os.path.exists(os.path.join(basedir, "config.py")):
 import config
 
 async def grzegorz_splash():
-    resp = await grzegorz.mpv_control.loadfile('grzegorz/grzegorz/res/logo.jpg')
+    #resp = await grzegorz.mpv_control.loadfile('./res/logo.jpg')
     #print(resp)
+    pass
 
 loop, app = grzegorz.make_sanic_app(
     host = config.address,
