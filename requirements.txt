@@ -1,4 +1,4 @@
 mpv==0.1
 youtube-dl
-sanic==0.7.0
-sanic-openapi==0.4.0
+sanic==21.6.2
+sanic-openapi==21.6.1

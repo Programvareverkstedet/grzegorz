@@ -1,6 +1,6 @@
 import asyncio, uvloop
 from sanic import Sanic
-from sanic_openapi import swagger_blueprint, openapi_blueprint
+from sanic_openapi import swagger_blueprint#, openapi2_blueprint
 from signal import signal, SIGINT
 
 from . import mpv
@@ -15,7 +15,7 @@ def make_sanic_app(host="0.0.0.0", port=8080):
 
     app = Sanic(__name__)
     app.blueprint(api.bp, url_prefix="/api")
-    app.blueprint(openapi_blueprint)
+    #app.blueprint(openapi2_blueprint)
     app.blueprint(swagger_blueprint)
     
     #openapi:
@@ -30,10 +30,10 @@ def make_sanic_app(host="0.0.0.0", port=8080):
     #app.config.API_LICENSE_URL = 'todo'
     
     asyncio.set_event_loop(uvloop.new_event_loop())
-    server_coro = app.create_server(host=host, port=port)
+    server_coro = app.create_server(host=host, port=port, return_asyncio_server=True)
     loop = asyncio.get_event_loop()
     server_task = asyncio.ensure_future(server_coro)
-    signal(SIGINT, lambda s, f: loop.stop())
+    #signal(SIGINT, lambda s, f: loop.stop())
     
     mpv_control = mpv.MPVControl()
     app.config["mpv_control"] = mpv_control
