@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.streams import StreamReader, StreamWriter
 
 def ify(func):
     """Decorate func to run async in default executor"""
@@ -57,9 +58,9 @@ async def unix_connection(path):
     return UnixConnection(*endpoints)
 
 class UnixConnection:
-    def __init__(self, reader, writer):
-        self.reader = reader
-        self.writer = writer
+    def __init__(self, reader: StreamReader, writer: StreamWriter):
+        self.reader: StreamReader = reader
+        self.writer: StreamWriter = writer
 
     def __aiter__(self):
         return self.reader.__aiter__()
