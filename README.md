@@ -1,5 +1,5 @@
 # Grzegorz API
-<img align="right" width="250" src="res/logo.png">
+<img align="right" width="250" src="grzegorz/res/logo.png">
 
 Grzegorz is simple REST API for managing an instance of MPV.
 Why the name Grzegorz? [We have a bad taste in humor!](https://youtu.be/t-fcrn1Edik)
@@ -9,22 +9,29 @@ When Grzegorz starts, it launches an instance of MPV and maintains it. It is des
 The API is described and can be tested at `http:/localhost:8080/swagger` while the server is running. All API endpoints are available under `/api`
 
 
-## How to run it
+## How install and run it
 
-First of we need to install any needed dependencies. If you want to, you may do so in a virtual environment.
+Gregorz manages a MPV process, meaning you need to have MPV installed on your system. Look for it in your package manager.
 
-To install the needed dependencies, run this with sufficient rights (as root?):
+    sudo pip install git+https://github.com/Programvareverkstedet/grzegorz#master
+    sanic grzegorz.app --host :: --port 80 --fast
 
-    pip install -r requirements.txt
+Details are over [here](https://sanic.dev/en/guide/deployment/running.html#running-via-command).
 
-Gregorz manages a MPV process, meaning you need MPV installed on your system. Look for it in your package manager.
 
-When finished, you may run the server with:
+## Development server
 
-    python3 main.py
+Setup local virtual environment and run with auto-reload:
 
-The server should now be available at `http://localhost:8080/`.
-You may change the address and port in the file named `config.py` which is copied from `default_config.py` when running `main.py` the first time
+    poetry install
+    poetry run sanic grzegorz.app --host localhost --port 8000 --debug
+
+The server should now be available at `http://localhost:8000/`.
+
+## A word of caution
+
+Grzegors will make a unix socket in the current working directory. Make sure it is somewhere writeable!
+
 
 ## Making Grzegorz run on boot
 

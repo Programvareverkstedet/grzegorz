@@ -1,59 +1,52 @@
-import asyncio, uvloop
 from sanic import Sanic
 from sanic_openapi import swagger_blueprint#, openapi2_blueprint
-from signal import signal, SIGINT
-
+from pathlib import Path
 from . import mpv
-from . import nyasync
 from . import api
 
-#global variable:
-mpv_control = None#mpv.MPVControl()
+__all__ = ["app"]
 
-def make_sanic_app(host="0.0.0.0", port=8080):
-    global mpv_control
+module_name = __name__.split(".", 1)[0]
+app = Sanic(module_name, env_prefix=module_name.upper() + '_')
 
-    app = Sanic(__name__)
-    app.blueprint(api.bp, url_prefix="/api")
-    #app.blueprint(openapi2_blueprint)
-    app.blueprint(swagger_blueprint)
-    
-    #openapi:
-    app.config.API_VERSION = '1.0'
-    app.config.API_TITLE = 'Grzegorz API'
-    app.config.API_DESCRIPTION \
-        = 'The Grzegorz Brzeczyszczykiewicz API, used to control a running MPV instance'
-    #app.config.API_TERMS_OF_SERVICE = ''# Supposed to be a link
-    app.config.API_PRODUCES_CONTENT_TYPES = ['application/json']
-    app.config.API_CONTACT_EMAIL = 'drift@pvv.ntnu.no'
-    #app.config.API_LICENSE_NAME = 'BSD 3-Clause License'
-    #app.config.API_LICENSE_URL = 'todo'
-    
-    asyncio.set_event_loop(uvloop.new_event_loop())
-    server_coro = app.create_server(host=host, port=port, return_asyncio_server=True)
-    loop = asyncio.get_event_loop()
-    server_task = asyncio.ensure_future(server_coro)
-    #signal(SIGINT, lambda s, f: loop.stop())
-    
-    mpv_control = mpv.MPVControl()
-    app.config["mpv_control"] = mpv_control
-    async def runMPVControl():
-        try:
-            await mpv_control.run()
-        except Exception as e:
-            print(e)
-        print("mpv is no longer running. Stopping Sanic...")
+
+# api
+app.blueprint(api.bp, url_prefix="/api")
+app.add_task(api.PLAYLIST_DATA_CACHE.run())
+
+
+# openapi:
+app.config.API_VERSION = '1.0'
+app.config.API_TITLE = 'Grzegorz API'
+app.config.API_DESCRIPTION \
+    = 'The Grzegorz Brzeczyszczykiewicz API, used to control a running mpv instance'
+#app.config.API_TERMS_OF_SERVICE = ''# Supposed to be a link
+app.config.API_PRODUCES_CONTENT_TYPES = ['application/json']
+app.config.API_CONTACT_EMAIL = 'drift@pvv.ntnu.no'
+#app.config.API_LICENSE_NAME = 'MIT'
+#app.config.API_LICENSE_URL = 'todo'
+
+#app.blueprint(openapi2_blueprint)
+app.blueprint(swagger_blueprint)
+
+
+# mpv:
+app.config["mpv_control"] = mpv.MPVControl()
+async def runMPVControl():
+    try:
+        await app.config["mpv_control"].run()
+    finally:
         app.stop()
-    asyncio.ensure_future(runMPVControl())
-    asyncio.ensure_future(api.PLAYLIST_DATA_CACHE.run())
-    
-    return loop, app
 
-def main(tasks:list = []):
-    loop, app = make_sanic_app()
-    for task in tasks:
-        asyncio.ensure_future(task)
-    loop.run_forever()
-    
-if __name__ == '__main__':
-    main()
+app.add_task(runMPVControl())
+
+# populate playlist
+async def ensure_splash():
+    here = Path(__file__).parent.resolve()
+    mpv_control: mpv.MPVControl = app.config["mpv_control"]
+    playlist = await mpv_control.playlist_get()
+    if len(playlist) == 0:
+        print("Adding splash to playlist...")
+        await mpv_control.loadfile(here / "res/logo.jpg")
+
+app.add_task(ensure_splash())
