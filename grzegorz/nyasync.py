@@ -53,14 +53,15 @@ class Condition:
         with await self.monitor:
             self.monitor.notify_all()
 
-async def unix_connection(path):
-    endpoints = await asyncio.open_unix_connection(path)
-    return UnixConnection(*endpoints)
-
 class UnixConnection:
     def __init__(self, reader: StreamReader, writer: StreamWriter):
         self.reader: StreamReader = reader
         self.writer: StreamWriter = writer
+
+    @classmethod
+    async def from_path(cls, path):
+        endpoints = await asyncio.open_unix_connection(path)
+        return cls(*endpoints)
 
     def __aiter__(self):
         return self.reader.__aiter__()
