@@ -1,6 +1,7 @@
 from sanic import Sanic
 from sanic_openapi import swagger_blueprint#, openapi2_blueprint
 from pathlib import Path
+import traceback
 from . import mpv
 from . import api
 
@@ -31,18 +32,22 @@ app.blueprint(swagger_blueprint)
 
 
 # mpv:
-app.config["mpv_control"] = mpv.MPVControl()
 async def runMPVControl():
+    app.config["mpv_control"] = mpv.MPVControl()
     try:
         await app.config["mpv_control"].run()
+    except:
+        traceback.print_exc()
     finally:
-        app.stop()
+        pass #app.stop()
 
 app.add_task(runMPVControl())
 
 # populate playlist
 async def ensure_splash():
     here = Path(__file__).parent.resolve()
+    while not "mpv_control" in app.config:
+        await None
     mpv_control: mpv.MPVControl = app.config["mpv_control"]
     playlist = await mpv_control.playlist_get()
     if len(playlist) == 0:

@@ -13,7 +13,7 @@ from . import nyasync
 class MPV:
     # TODO: move this to /tmp or /var/run ?
     # TODO: make it configurable with an env variable?
-    _ipc_endpoint = Path("mpv_ipc.socket")
+    _ipc_endpoint = Path(f"mpv_ipc.socket")
 
     def __init__(self):
         self.requests = nyasync.Queue()
@@ -48,6 +48,7 @@ class MPV:
             )
 
     async def connect(self, *, timeout=10):
+        await asyncio.sleep(0.5)
         t = time.time()
         while self.is_running and time.time() - t < timeout:
             try:
@@ -154,7 +155,7 @@ class MPVControl:
             "force",
             "on"
             )
-        code = await process.wait()
+        code = await p.wait()
 
     #Shorthand command requests:
 
