@@ -66,5 +66,49 @@
       default.program = "${self.packages.${system}.grzegorz-run}/bin/grzegorz-run";
     });
 
+    nixosModules.grzegorz-kiosk = { config, pkgs, ... }: let
+      inherit (pkgs) lib;
+      cfg = config.services.grzegorz;
+    in {
+      options.services.grzegorz = {
+
+        enable = lib.mkEnableOption (lib.mdDoc "grzegorz");
+
+        package = lib.mkPackageOption self.packages.${config.nixpkgs.system} "grzegorz-run" { };
+
+        listenAddr = lib.mkOption {
+            type = lib.types.str;
+            default = "::";
+        };
+        listenPort = lib.mkOption {
+            type = lib.types.port;
+            default = 9090;
+        };
+      };
+      config = {
+        systemd.services.grzegorz = lib.mkIf cfg.enable {
+          description = "grzegorz";
+          wantedBy = [ "default.target" ];
+          serviceConfig = {
+            User = "grzegorz";
+            Group = "grzegorz";
+            DynamicUser = true;
+            #StateDirectory = "grzegorz";
+            #CacheDirectory = "grzegorz";
+            ExecStart = lib.escapeShellArgs [
+              "${pkgs.cage}/bin/cage"
+              "--"
+              "${cfg.package}/bin/grzegorz-run"
+              "--host" cfg.listenAddr
+              "--port" cfg.listenPort
+            ];
+            Restart = "on-failure";
+          };
+        };
+
+      };
+    };
+
+
   };
 }
