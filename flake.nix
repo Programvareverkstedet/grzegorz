@@ -1,55 +1,70 @@
 {
   description = "A REST API for managing a MPV instance over via a RPC socket";
 
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-  inputs.poetry2nix.url = "github:nix-community/poetry2nix";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
-    {
-      # Nixpkgs overlay providing the application
-      overlay = nixpkgs.lib.composeManyExtensions [
-        poetry2nix.overlay
-        (final: prev: {
-          # The application
-          grzegorz = prev.poetry2nix.mkPoetryApplication {
-            projectDir = ./.;
-          };
-        })
-      ];
-    } // (flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ self.overlay ];
-        };
-        entrypoint = pkgs.writeShellApplication {
-          name = "grzegorz-run";
-          runtimeInputs = [
-            pkgs.grzegorz
-            pkgs.mpv
-          ];
-          text = ''
-            SPIS_MEG=()
-            if test -z "$*"; then
-              >&2 echo "DEBUG: No args provided, running with defaults...."
-              SPIS_MEG=("--host" "::" "--port" "8080")
-            fi
-            (
-                set -x
-                sanic grzegorz.app "''${SPIS_MEG[@]}" "$@"
-            )
-          '';
-        };
-      in {
-        packages = {
-          inherit (pkgs) grzegorz;
-          grzegorz-run = entrypoint;
-        };
+  outputs = {
+    self,
+    nixpkgs,
+    ...
+  } @ inputs:
+  let
+    forSystems = systems: f: nixpkgs.lib.genAttrs systems (system: f rec {
+      inherit system;
+      pkgs = nixpkgs.legacyPackages.${system};
+      lib  = nixpkgs.legacyPackages.${system}.lib;
+    });
+    forAllSystems = forSystems [
+      "x86_64-linux"
+      "aarch64-linux"
+      #"riscv64-linux"
+    ];
+  in {
 
-        apps = {
-          default.type = "app";
-          default.program = "${entrypoint}/bin/grzegorz-run";
+    packages = forAllSystems ({ system, pkgs, ...}: rec {
+      sanic-openapi = with pkgs.python3.pkgs; buildPythonPackage rec {
+        pname = "sanic-openapi";
+        version = "21.12.0";
+        src = fetchPypi {
+          inherit pname version;
+          hash = "sha256-fNpiI00IyWX3OeqsawWejyRNhwYdlzNcVyh/1q4Wv1I=";
         };
-      }));
+        propagatedBuildInputs = [ sanic pyyaml ];
+        doCheck = false;
+      };
+      grzegorz = with pkgs.python3.pkgs; buildPythonPackage {
+        pname = "grzegorz";
+        version = (builtins.fromTOML (builtins.readFile ./pyproject.toml)).tool.poetry.version;
+        format = "pyproject";
+        src = ./.;
+        postInstall = ''
+        '';
+        nativeBuildInputs = [ poetry-core ];
+        propagatedBuildInputs = [ sanic sanic-openapi youtube-dl mpv ];
+        doCheck = false;
+      };
+      grzegorz-run = pkgs.writeShellApplication {
+        name = "grzegorz-run";
+        runtimeInputs = [ grzegorz pkgs.mpv ];
+        text = ''
+          TOOMANYARGS=()
+          if test -z "$*"; then
+            >&2 echo "DEBUG: No args provided, running with defaults...."
+            TOOMANYARGS=("--host" "::" "--port" "8080")
+          fi
+          (
+              set -x
+              sanic grzegorz.app "''${TOOMANYARGS[@]}" "$@"
+          )
+        '';
+      };
+
+    });
+
+    apps = forAllSystems ({ system, pkgs, ...}: {
+      default.type = "app";
+      default.program = "${self.packages.${system}.grzegorz-run}/bin/grzegorz-run";
+    });
+
+  };
 }
