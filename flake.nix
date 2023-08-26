@@ -86,29 +86,26 @@
         };
       };
       config = {
-        systemd.services.grzegorz = lib.mkIf cfg.enable {
-          description = "grzegorz";
-          wantedBy = [ "default.target" ];
-          serviceConfig = {
-            User = "grzegorz";
-            Group = "grzegorz";
-            DynamicUser = true;
-            #StateDirectory = "grzegorz";
-            #CacheDirectory = "grzegorz";
-            ExecStart = lib.escapeShellArgs [
-              "${pkgs.cage}/bin/cage"
-              "--"
-              "${cfg.package}/bin/grzegorz-run"
-              "--host" cfg.listenAddr
-              "--port" cfg.listenPort
-            ];
-            Restart = "on-failure";
+        services.cage.enable = true;
+        services.cage.program = pkgs.writeShellScript "grzegorz-kiosk" ''
+          cd $(mktemp -d)
+          ${(lib.escapeShellArgs [
+            "${cfg.package}/bin/grzegorz-run"
+            "--host" cfg.listenAddr
+            "--port" cfg.listenPort
+          ])}
+        '';
+        services.cage.user = "grzegorz";
+        users.users."grzegorz".isNormalUser = true;
+        system.activationScripts = {
+          base-dirs = {
+            text = ''
+              mkdir -p /nix/var/nix/profiles/per-user/grzegorz
+            '';
+            deps = [];
           };
         };
-
       };
     };
-
-
   };
 }
