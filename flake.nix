@@ -22,14 +22,14 @@
   in {
 
     packages = forAllSystems ({ system, pkgs, ...}: rec {
-      sanic-openapi = with pkgs.python3.pkgs; buildPythonPackage rec {
-        pname = "sanic-openapi";
-        version = "21.12.0";
+      sanic-ext = with pkgs.python3.pkgs; buildPythonPackage rec {
+        pname = "sanic-ext";
+        version = "23.6.0";
         src = fetchPypi {
           inherit pname version;
-          hash = "sha256-fNpiI00IyWX3OeqsawWejyRNhwYdlzNcVyh/1q4Wv1I=";
+          hash = "sha256-gd0Ta2t7ef2otP7CRE2YIjlFVXecKYqJFVxnKHoYSQI=";
         };
-        propagatedBuildInputs = [ sanic pyyaml ];
+        propagatedBuildInputs = [ pyyaml ];
         doCheck = false;
       };
       grzegorz = with pkgs.python3.pkgs; buildPythonPackage {
@@ -40,12 +40,12 @@
         postInstall = ''
         '';
         nativeBuildInputs = [ poetry-core ];
-        propagatedBuildInputs = [ sanic sanic-openapi youtube-dl mpv ];
+        propagatedBuildInputs = [ setuptools sanic sanic-ext youtube-dl mpv ];
         doCheck = false;
       };
       grzegorz-run = pkgs.writeShellApplication {
         name = "grzegorz-run";
-        runtimeInputs = [ grzegorz pkgs.mpv ];
+        runtimeInputs = [ (pkgs.python3.withPackages (ps: [ grzegorz ]))  pkgs.mpv ];
         text = ''
           TOOMANYARGS=()
           if test -z "$*"; then

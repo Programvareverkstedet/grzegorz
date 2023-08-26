@@ -1,5 +1,4 @@
 from sanic import Sanic
-from sanic_openapi import swagger_blueprint#, openapi2_blueprint
 from pathlib import Path
 import traceback
 from . import mpv
@@ -15,20 +14,11 @@ app = Sanic(module_name, env_prefix=module_name.upper() + '_')
 app.blueprint(api.bp, url_prefix="/api")
 app.add_task(api.PLAYLIST_DATA_CACHE.run())
 
-
 # openapi:
-app.config.API_VERSION = '1.0'
-app.config.API_TITLE = 'Grzegorz API'
-app.config.API_DESCRIPTION \
-    = 'The Grzegorz Brzeczyszczykiewicz API, used to control a running mpv instance'
-#app.config.API_TERMS_OF_SERVICE = ''# Supposed to be a link
-app.config.API_PRODUCES_CONTENT_TYPES = ['application/json']
-app.config.API_CONTACT_EMAIL = 'drift@pvv.ntnu.no'
-#app.config.API_LICENSE_NAME = 'MIT'
-#app.config.API_LICENSE_URL = 'todo'
-
-#app.blueprint(openapi2_blueprint)
-app.blueprint(swagger_blueprint)
+app.ext.openapi.describe("Grzegorz API",
+    version     = "1.0.0.",
+    description = "The Grzegorz Brzeczyszczykiewicz API, used to control a running mpv instance",
+)
 
 
 # mpv:

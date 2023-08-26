@@ -1,5 +1,5 @@
 from sanic import Request, Blueprint, response
-from sanic_openapi import doc
+from sanic_ext import openapi
 from functools import wraps
 from .mpv import MPVControl
 from .playlist_data import PlaylistDataCache
@@ -44,15 +44,15 @@ PLAYLIST_DATA_CACHE = PlaylistDataCache(auto_fetch_data=True)
 
 #routes:
 @bp.get("")
-@doc.exclude(True)
+@openapi.exclude(True)
 @response_text
 async def root(request: Request):
     return "Hello friend, I hope you're having a lovely day"
 
 @bp.post("/load")
-@doc.summary("Add item to playlist")
-@doc.consumes({"path": doc.String("Link to the resource to enqueue")}, required=True)
-@doc.consumes({"body":doc.Dictionary(description="Any data you want stored with the queued item")}, location="body")
+@openapi.summary("Add item to playlist")
+@openapi.parameter("path", openapi.String(description="Link to the resource to enqueue"), required=True)
+@openapi.parameter("body", openapi.Object(description="Any data you want stored with the queued item"), location="body")
 @response_json
 async def loadfile(request: Request, mpv_control: MPVControl):
     if "path" not in request.args:
@@ -63,15 +63,15 @@ async def loadfile(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.get("/play")
-@doc.summary("Check whether the player is paused or playing")
+@openapi.summary("Check whether the player is paused or playing")
 @response_json
 async def play_get(request: Request, mpv_control: MPVControl):
     value = await mpv_control.pause_get() == False
     return locals()
 
 @bp.post("/play")
-@doc.summary("Set whether the player is paused or playing")
-@doc.consumes({"play": doc.Boolean("Whether to be playing or not")})
+@openapi.summary("Set whether the player is paused or playing")
+@openapi.parameter("play", openapi.Boolean(description="Whether to be playing or not"))
 @response_json
 async def play_set(request: Request, mpv_control: MPVControl):
     if "play" not in request.args:
@@ -81,15 +81,15 @@ async def play_set(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.get("/volume")
-@doc.summary("Get the current player volume")
+@openapi.summary("Get the current player volume")
 @response_json
 async def volume_get(request: Request, mpv_control: MPVControl):
     value = await mpv_control.volume_get()
     return locals()
 
 @bp.post("/volume")
-@doc.summary("Set the player volume")
-@doc.consumes({"volume": doc.Integer("A number between 0 and 100")})
+@openapi.summary("Set the player volume")
+@openapi.parameter("volume", openapi.Integer(description="A number between 0 and 100"))
 @response_json
 async def volume_set(request: Request, mpv_control: MPVControl):
     if "volume" not in request.args:
@@ -99,7 +99,7 @@ async def volume_set(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.get("/time")
-@doc.summary("Get current playback position")
+@openapi.summary("Get current playback position")
 @response_json
 async def time_get(request: Request, mpv_control: MPVControl):
     value = {
@@ -110,8 +110,9 @@ async def time_get(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.post("/time")
-@doc.summary("Set playback position")
-@doc.consumes({"pos": doc.Float("Seconds to seek to"), "pos": doc.Integer("Percent to seek to")})
+@openapi.summary("Set playback position")
+@openapi.parameter("pos", openapi.Float(description="Seconds to seek to"))
+@openapi.parameter("percent", openapi.Integer(description="Percent to seek to"))
 @response_json
 async def time_set(request: Request, mpv_control: MPVControl):
     if "pos" in request.args:
@@ -123,7 +124,7 @@ async def time_set(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.get("/playlist")
-@doc.summary("Get the current playlist")
+@openapi.summary("Get the current playlist")
 @response_json
 async def playlist_get(request: Request, mpv_control: MPVControl):
     value = await mpv_control.playlist_get()
@@ -136,22 +137,22 @@ async def playlist_get(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.post("/playlist/next")
-@doc.summary("Skip to the next item in the playlist")
+@openapi.summary("Skip to the next item in the playlist")
 @response_json
 async def playlist_next(request: Request, mpv_control: MPVControl):
     success = await mpv_control.playlist_next()
     return locals()
 
 @bp.post("/playlist/previous")
-@doc.summary("Go back to the previous item in the playlist")
+@openapi.summary("Go back to the previous item in the playlist")
 @response_json
 async def playlist_previous(request: Request, mpv_control: MPVControl):
     success = await mpv_control.playlist_prev()
     return locals()
 
 @bp.post("/playlist/goto")
-@doc.summary("Go chosen item in the playlist")
-@doc.consumes({"index": doc.Integer("The 0 indexed playlist item to go to")}, required=True)
+@openapi.summary("Go chosen item in the playlist")
+@openapi.parameter("index", openapi.Integer(description="The 0 indexed playlist item to go to"), required=True)
 @response_json
 async def playlist_goto(request: Request, mpv_control: MPVControl):
     if "index" not in request.args:
@@ -161,8 +162,8 @@ async def playlist_goto(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.delete("/playlist")
-@doc.summary("Clears single item or whole playlist")
-@doc.consumes({"index": doc.Integer("Index to item in playlist to remove. If unset, the whole playlist is cleared")})
+@openapi.summary("Clears single item or whole playlist")
+@openapi.parameter("index", openapi.Integer(description="Index to item in playlist to remove. If unset, the whole playlist is cleared"))
 @response_json
 async def playlist_remove_or_clear(request: Request, mpv_control: MPVControl):
     if "index" in request.args:
@@ -174,15 +175,15 @@ async def playlist_remove_or_clear(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.post("/playlist/move")
-@doc.summary("Move playlist item to new position")
-@doc.description(
+@openapi.summary("Move playlist item to new position")
+@openapi.description(
     "Move the playlist entry at index1, so that it takes the "
     "place of the entry index2. (Paradoxically, the moved playlist "
     "entry will not have the index value index2 after moving if index1 "
     "was lower than index2, because index2 refers to the target entry, "
     "not the index the entry will have after moving.)")
-@doc.consumes({"index2": int}, required=True)
-@doc.consumes({"index1": int}, required=True)
+@openapi.parameter("index2", int, required=True)
+@openapi.parameter("index1", int, required=True)
 @response_json
 async def playlist_move(request: Request, mpv_control: MPVControl):
     if "index1" not in request.args or "index2" not in request.args:
@@ -195,22 +196,22 @@ async def playlist_move(request: Request, mpv_control: MPVControl):
     return locals()
 
 @bp.post("/playlist/shuffle")
-@doc.summary("Clears single item or whole playlist")
+@openapi.summary("Clears single item or whole playlist")
 @response_json
 async def playlist_shuffle(request: Request, mpv_control: MPVControl):
     success = await mpv_control.playlist_shuffle()
     return locals()
 
 @bp.get("/playlist/loop")
-@doc.summary("See whether it loops the playlist or not")
+@openapi.summary("See whether it loops the playlist or not")
 @response_json
 async def playlist_get_looping(request: Request, mpv_control: MPVControl):
     value = await mpv_control.playlist_get_looping()
     return locals()
 
 @bp.post("/playlist/loop")
-@doc.summary("Sets whether to loop the playlist or not")
-@doc.consumes({"loop": doc.Boolean("Whether to be looping or not")}, required=True)
+@openapi.summary("Sets whether to loop the playlist or not")
+@openapi.parameter("loop", openapi.Boolean(description="Whether to be looping or not"), required=True)
 @response_json
 async def playlist_set_looping(request: Request, mpv_control: MPVControl):
     if "loop" not in request.args:

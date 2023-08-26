@@ -6,7 +6,7 @@ Why "Grzegorz"? [Great taste in humor of course!](https://youtu.be/t-fcrn1Edik)
 
 When `grzegorz` starts, it launches an instance of MPV and maintains it. It is designed to be used as an info screen or HTPC, and supports multiple users to push changes to the MPV instance.
 
-The API is described and can be tested at `http:/localhost:8080/swagger` while the server is running. All API endpoints are available under `/api`
+The API is described and can be tested at `http:/localhost:8080/docs/swagger` while the server is running. All API endpoints are available under `/api`
 
 
 ## How install and run it
