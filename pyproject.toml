@@ -8,7 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
 mpv = ">=0.1" # TODO: do we use this?
-youtube_dl = "^2021.12.17"
+yt-dlp = "^2023.7.6"
 sanic = ">=21.12.2"
 sanic-ext = ">=23.6.0"
 #sanic-openapi = ">=21.6.1"

@@ -40,7 +40,7 @@
         postInstall = ''
         '';
         nativeBuildInputs = [ poetry-core ];
-        propagatedBuildInputs = [ setuptools sanic sanic-ext youtube-dl mpv ];
+        propagatedBuildInputs = [ setuptools sanic sanic-ext yt-dlp mpv ];
         doCheck = false;
       };
       grzegorz-run = pkgs.writeShellApplication {
@@ -58,7 +58,7 @@
           )
         '';
       };
-
+      default = grzegorz;
     });
 
     apps = forAllSystems ({ system, pkgs, ...}: {

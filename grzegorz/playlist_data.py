@@ -36,10 +36,10 @@ class PlaylistDataCache:
                     yield new_item
                     continue
                 elif self.auto_fetch_data:
-                    self.filepath_data_map[item["filename"]] = {"fetching":True}
+                    self.filepath_data_map[item["filename"]] = {"fetching": True}
                     self.jobs.put_nowait(item["filename"])
                     new_item = item.copy()
-                    new_item["data"] = {"fetching":True}
+                    new_item["data"] = {"fetching": True}
                     yield new_item
                     continue
             yield item

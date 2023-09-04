@@ -1,6 +1,6 @@
 from urllib.parse import urlsplit, urlunsplit, parse_qs, urlencode
-import youtube_dl
-from youtube_dl.utils import DownloadError
+import yt_dlp as youtube_dl
+from yt_dlp.utils import DownloadError
 from . import nyasync
 
 
@@ -24,7 +24,7 @@ def filter_query_params(url, allowed=[]):
         split_url.path,
         urlencode(qs, doseq=True),
         split_url.fragment,
-        ))
+    ))
 
 @nyasync.ify
 def get_youtube_dl_metadata(url, ydl = youtube_dl.YoutubeDL()):
@@ -49,6 +49,6 @@ async def get_metadata(url):
     data = await get_youtube_dl_metadata(url)
     if data is None:
         # (TODO): local ID3 tags
-        return {"failed":True}
+        return {"failed": True}
 
     return data
