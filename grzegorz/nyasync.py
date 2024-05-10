@@ -60,11 +60,11 @@ class UnixConnection:
 
     @classmethod
     async def from_path(cls, path):
-        endpoints = await asyncio.open_unix_connection(path)
+        endpoints = await asyncio.open_unix_connection(path, limit=2**24) # default is 2**16
         return cls(*endpoints)
 
     def __aiter__(self):
-        return self.reader.__aiter__()
+        return self.reader.__aiter__() # readline
 
     def write(self, data):
         self.writer.write(data)

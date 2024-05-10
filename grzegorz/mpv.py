@@ -9,6 +9,7 @@ from pathlib import Path
 
 from . import nyasync
 
+IS_DEBUG = os.environ.get("GRZEGORZ_IS_DEBUG", "0") != "0"
 
 class MPV:
     # TODO: move this to /tmp or /var/run ?
@@ -27,7 +28,7 @@ class MPV:
             f'--input-ipc-server={str(cls._ipc_endpoint)}',
             '--idle',
             '--force-window',
-            '--fullscreen',
+            *(('--fullscreen',) if not IS_DEBUG else ()),
             '--no-terminal',
             '--load-unsafe-playlists',
             '--keep-open', # Keep last frame of video on end of video

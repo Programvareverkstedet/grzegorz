@@ -47,7 +47,7 @@ PLAYLIST_DATA_CACHE = PlaylistDataCache(auto_fetch_data=True)
 @openapi.exclude(True)
 @response_text
 async def root(request: Request):
-    return "Hello friend, I hope you're having a lovely day"
+    return "Hello friend, I hope you're having a lovely day\n"
 
 @bp.post("/load")
 @openapi.summary("Add item to playlist")
