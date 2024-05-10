@@ -3,9 +3,14 @@
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+  inputs.fix-python.url = "github:GuillaumeDesforges/fix-python";
+  inputs.fix-python.inputs.nixpkgs.follows = "nixpkgs";
+  #inputs.fix-python.inputs.flake-utils.follows = "flake-utils";
+
   outputs = {
     self,
     nixpkgs,
+    fix-python,
     ...
   } @ inputs:
   let
@@ -24,10 +29,10 @@
     packages = forAllSystems ({ system, pkgs, ...}: rec {
       sanic-ext = with pkgs.python3.pkgs; buildPythonPackage rec {
         pname = "sanic-ext";
-        version = "23.6.0";
+        version = "23.12.0";
         src = fetchPypi {
           inherit pname version;
-          hash = "sha256-gd0Ta2t7ef2otP7CRE2YIjlFVXecKYqJFVxnKHoYSQI=";
+          hash = "sha256-QvxB5/r6WPO3kPaF892KjeKBRgtBadDpH04RuHR/hFw=";
         };
         propagatedBuildInputs = [ pyyaml ];
         doCheck = false;
@@ -64,6 +69,32 @@
     apps = forAllSystems ({ system, pkgs, ...}: {
       default.type = "app";
       default.program = "${self.packages.${system}.grzegorz-run}/bin/grzegorz-run";
+    });
+
+    devShells = forAllSystems ({ system, pkgs, ...}: rec {
+      default = pkgs.mkShellNoCC {
+        packages = with pkgs; [
+          poetry
+          python3
+          # mpv # myust be in sync with system glibc
+          fix-python.packages.${system}.default
+        ];
+        shellHook = let
+          inherit (pkgs) lib;
+          libs = [
+            pkgs.stdenv.cc.cc.lib # dlopen libstdc++
+            #pkgs.glibc
+            #pkgs.zlib
+          ];
+          addPath = var: paths: subdir: ''
+            export ${var}=${lib.makeSearchPath subdir libs}"''${${var}:+:$${var}}"
+          '';
+        in ''
+          export NIX_PATH=nixpkgs=${nixpkgs}"''${NIX_PATH:+:$NIX_PATH}"
+          ${addPath "CPATH"           libs "include"}
+          ${addPath "LD_LIBRARY_PATH" libs "lib"}
+        '';
+      };
     });
 
     nixosModules.grzegorz-kiosk = { config, pkgs, ... }: let
