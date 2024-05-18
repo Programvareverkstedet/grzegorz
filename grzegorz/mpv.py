@@ -29,6 +29,7 @@ class MPV:
             '--idle',
             '--force-window',
             *(('--fullscreen',) if not IS_DEBUG else ()),
+            '--ytdl-format=bestvideo[height<=?1080]',
             '--no-terminal',
             '--load-unsafe-playlists',
             '--keep-open', # Keep last frame of video on end of video
