@@ -28,7 +28,6 @@ class MPV:
             f'--input-ipc-server={str(cls._ipc_endpoint)}',
             '--pipewire-remote=/run/user/1003/pipewire-0', # Cage doesn't set up XDG variables properly?
             '--idle',
-            '--force-window',
             *(('--fullscreen',) if not IS_DEBUG else ()),
             '--ytdl-format=bestvideo[height<=?1080]',
             '--no-terminal',
