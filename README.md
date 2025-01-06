@@ -13,7 +13,7 @@ The API is described and can be tested at `http:/localhost:8080/docs/swagger` wh
 
 Gregorz manages a MPV process, meaning you need to have MPV installed on your system. Look for it in your package manager.
 
-    sudo pip install git+https://github.com/Programvareverkstedet/grzegorz#master
+    sudo pip install git+https://git.pvv.ntnu.no/Grzegorz/grzegorz#master
     sanic grzegorz.app --host :: --port 8080
 
 Details are over [here](https://sanic.dev/en/guide/deployment/running.html#running-via-command).
