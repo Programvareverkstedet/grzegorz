@@ -2,7 +2,7 @@
 <img align="right" width="250" src="grzegorz/res/logo.png">
 
 `grzegorz` is simple REST API for managing an instance of MPV.
-Why "Grzegorz"? [Great taste in humor of course!](https://youtu.be/t-fcrn1Edik)
+Why "Grzegorz"? [Great taste in humor of course!](https://www.youtube.com/watch?v=AfKZclMWS1U)
 
 When `grzegorz` starts, it launches an instance of MPV and maintains it. It is designed to be used as an info screen or HTPC, and supports multiple users to push changes to the MPV instance.
 
